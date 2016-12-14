@@ -1,0 +1,61 @@
+#!/usr/bin/python3
+
+import os
+import filecmp
+
+BOOT_CONFIG="/boot/uboot/config.txt"
+
+VALID_KEYS=[
+    "disable_overscan",
+    "framebuffer_width",
+    "framebuffer_height",
+    "framebuffer_depth",
+    "framebuffer_ignore_alpha",
+    "overscan_left",
+    "overscan_right",
+    "overscan_top",
+    "overscan_bottom",
+    "overscan_scale",
+    "display_rotate",
+    "hdmi_group",
+    "hdmi_mode",
+    "hdmi_drive",
+    "avoid_warnings",
+    "gpu_mem_256",
+    "gpu_mem_512",
+    "gpu_mem",
+]
+
+def get_pi2_config_items():
+   new_values = {}
+   for k in VALID_KEYS:
+      try:
+         v = subprocess.check_output(["snapctl", "get", "pi2", k])
+      except subprocess.CalledProcessError:
+         continue
+      new_values[k] = v
+   return new_values
+
+
+def write_boot_config(items):
+   lines = []
+   with open(BOOT_CONFIG) as fp:
+      for line in fp.readlines():
+         line = line.strip()
+         for k, v in items:
+            if line.startswith("#{}=".format(k)):
+               line = "{}={}".format(k,v)
+               del items[k]
+            lines.append(line)
+      # leftovers
+      for k,v in items:
+         lines.append("{}={}".format(k,v))
+   with open(BOOT_CONFIG+".tmp", "w") as fp:
+      fp.write("\n".join(lines))
+   if not filecmp.cmp(BOOT_CONFIG+".tmp", BOOT_CONFIG, shallow=False):
+      os.rename(BOOT_CONFIG+".tmp", BOOT_CONFIG)
+
+
+if __name__ == "__main__":
+   items = get_pi2_config_items()
+   write_boot_config(items)
