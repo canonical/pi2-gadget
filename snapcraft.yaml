@@ -7,11 +7,17 @@ type: gadget
 architectures:
   - armhf
 confinement: strict
+slots:
+  boot-config-slot:
+    interface: boot-config
 grade: stable
 parts:
     prebuilt:
         plugin: dump
         source: prebuilt
+    hooks:
+        plugin: dump
+        source: prebuild-meta
     licenses:
         plugin: copy
         files:
