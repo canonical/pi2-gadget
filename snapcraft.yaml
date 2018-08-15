@@ -1,5 +1,5 @@
 name: pi2
-version: 16.04-0.20
+version: 18-1
 summary: Raspberry Pi 2 support package
 description: |
  Support files for booting Raspberry Pi
